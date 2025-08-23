@@ -13,6 +13,7 @@ import { Colors } from "@/constants/Colors";
 export default function RootLayout() {
     const colorScheme = useColorScheme();
     const [session, setSession] = useState<Session | null>(null);
+ 
     const [loaded] = useFonts({
         SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     });
