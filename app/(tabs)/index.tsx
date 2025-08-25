@@ -1,11 +1,14 @@
 import { Button, ButtonGroup, Input, Overlay, Text } from "@rneui/themed";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Balance } from "@/components/Balance";
 import { useState } from "react";
 import ColorPickerComponent from "@/components/ColorPickerComponent";
 import { ColorFormatsObject } from "reanimated-color-picker";
 import { addCategory, getCategoryByName } from "@/services/categoryService";
+import NumericPad from "@/components/NumericPad";
+import LastCategories from "@/components/LastCategories";
+import DateInput from "@/components/DateInput";
 
 export default function HomeScreen() {
     const [visible, setVisible] = useState(false);
@@ -16,8 +19,42 @@ export default function HomeScreen() {
     const [usedNameAlert, setUsedNameAlert] = useState(false);
     const [paymentModal, setPaymentModal] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const [amount, setAmount] = useState("");
+    const [amount, setAmount] = useState("-");
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(
+        null
+    );
+    const [checkForSave, setCheckForSave] = useState(false);
 
+    const getFormattedAmount = () => {
+        if (!amount || amount === "+" || amount === "-") return 0;
+        const cleaned = amount.startsWith("+") ? amount.slice(1) : amount;
+        return parseFloat(cleaned);
+    };
+    const isAmountSeted = () => {
+        if (getFormattedAmount() != 0) {
+            return true;
+        }
+        return false;
+    };
+
+    const checkAll = () => {
+        if (isAmountSeted() && selectedCategory) {
+            setCheckForSave(true);
+        } else {
+            setCheckForSave(false);
+        }
+    };
+
+    const changeTab = (index: number) => {
+        setSelectedIndex(index);
+        if (index == 1) {
+            let newAmount = "+" + amount.slice(1);
+            setAmount(newAmount);
+        } else {
+            let newAmount = "-" + amount.slice(1);
+            setAmount(newAmount);
+        }
+    };
     function getRandomColor() {
         const letters = "0123456789ABCDEF";
         let color = "#";
@@ -36,6 +73,29 @@ export default function HomeScreen() {
     const saveColor = (colorObj: string) => {
         setPickingColor(false);
         setColor(colorObj);
+    };
+
+    const numpadEdit = (number: string) => {
+        if (number == "⌫") {
+            if (amount.length > 1) {
+                setAmount(amount.slice(0, -1));
+            }
+        } else {
+            if (number == ".") {
+                if (amount.includes(".")) {
+                    return;
+                }
+                if (amount.length == 1) {
+                    setAmount(amount + "0.");
+                } else setAmount(amount + ".");
+            }
+            if (amount.length == 2) {
+                if (amount[1] == "0") {
+                    setAmount(amount.slice(0, -1) + number);
+                }
+            } else setAmount(amount + number);
+        }
+        checkAll();
     };
 
     async function saveCategory() {
@@ -116,7 +176,7 @@ export default function HomeScreen() {
                                 <Text style={styles.colorText}>Set color</Text>
                             </TouchableOpacity>
 
-                            <View>
+                            <View style={{ flex: 1 }}>
                                 <Input
                                     placeholder="Category name"
                                     onChangeText={setCategoryName}
@@ -159,32 +219,64 @@ export default function HomeScreen() {
 
                 <Overlay
                     isVisible={paymentModal}
-                    overlayStyle={styles.overlayBorder}
+                    overlayStyle={styles.overlayPayment}
                     animationType="fade"
+                    onBackdropPress={() => setPaymentModal(false)}
                 >
-                    <View style={styles.container}>
+                    <View style={styles.overlayContainer}>
+                        {/* Close button */}
+                        <TouchableOpacity
+                            onPress={() => setPaymentModal(false)}
+                            style={styles.closeButtonTopRight}
+                        >
+                            <Text style={styles.closeText}>✕</Text>
+                        </TouchableOpacity>
+
+                        {/* Content */}
                         <ButtonGroup
                             buttons={["Paid", "Earned"]}
                             selectedIndex={selectedIndex}
-                            onPress={(value) => {
-                                setSelectedIndex(value);
-                            }}
+                            onPress={(index) => changeTab(index)}
                             selectedButtonStyle={{
                                 backgroundColor: Colors.accentPrimary,
                             }}
                             buttonStyle={{
                                 backgroundColor: Colors.accentLight,
                             }}
-                            containerStyle={{ marginBottom: 20 }}
+                            containerStyle={styles.buttonGroupFullWidth}
                         />
-                    </View>
-                    <View></View>
-                    <View>
+                        <LastCategories
+                            setId={(id) => {
+                                setSelectedCategory(id);
+                                checkAll();
+                            }}
+                        />
                         <Input
-                            placeholder="Enter a number"
+                            placeholder="Amount"
                             value={amount}
-                            onChangeText={setAmount}
-                            keyboardType="numeric"
+                            editable={false}
+                            placeholderTextColor={Colors.textPrimary}
+                            inputStyle={[
+                                {
+                                    textAlign: "center",
+                                    fontSize: 26,
+                                },
+                                {
+                                    color: selectedIndex == 0 ? "red" : "green",
+                                },
+                            ]}
+                        />
+                        <DateInput />
+                        <NumericPad onPress={(x) => numpadEdit(x)} />
+                        <Button
+                            title="Save"
+                            buttonStyle={[
+                                styles.saveButton,
+                                { margin: 10 },
+                                checkForSave && {
+                                    backgroundColor: Colors.accentLight,
+                                },
+                            ]}
                         />
                     </View>
                 </Overlay>
@@ -223,7 +315,7 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     containerButtons: {
-        marginTop: 20,
+        marginTop: 50,
         flexDirection: "row", // pe orizontală
         justifyContent: "space-between", // unul la stânga, altul la dreapta
         paddingHorizontal: 10, // ca să nu lipească butoanele de margine
@@ -287,6 +379,7 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         flex: 1,
+        //width: 200,
     },
     inputText: {
         color: Colors.textPrimary,
@@ -299,5 +392,44 @@ const styles = StyleSheet.create({
     },
     alert: {
         color: "red",
+    },
+    overlayPayment: {
+        backgroundColor: Colors.card,
+        borderWidth: 2,
+        borderRadius: 15,
+        padding: 0,
+        width: 320, // ajustați după nevoie
+        overflow: "visible",
+    },
+    overlayContainer: {
+        padding: 0,
+        position: "relative", // ca să putem poziționa butonul de close absolut
+    },
+    closeButtonTopRight: {
+        position: "absolute",
+        top: -15,
+        right: -15,
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: "red",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 10,
+        overflow: "visible",
+    },
+    closeText: {
+        fontSize: 18,
+        color: "white",
+    },
+    buttonGroupFullWidth: {
+        width: "100%",
+        marginBottom: 20,
+        marginTop: 0,
+        marginRight: 0,
+        marginLeft: 0,
+        borderTopLeftRadius: 15, // colțul stânga sus
+        borderTopRightRadius: 15, // colțul dreapta sus
+        overflow: "hidden",
     },
 });
