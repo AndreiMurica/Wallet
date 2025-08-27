@@ -2,13 +2,15 @@ import { Button, ButtonGroup, Input, Overlay, Text } from "@rneui/themed";
 import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Balance } from "@/components/Balance";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ColorPickerComponent from "@/components/ColorPickerComponent";
 import { ColorFormatsObject } from "reanimated-color-picker";
 import { addCategory, getCategoryByName } from "@/services/categoryService";
 import NumericPad from "@/components/NumericPad";
 import LastCategories from "@/components/LastCategories";
 import DateInput from "@/components/DateInput";
+import { addPayment } from "@/services/paymentService";
+import PaymentsList from "@/components/PaymentsList";
 
 export default function HomeScreen() {
     const [visible, setVisible] = useState(false);
@@ -24,6 +26,16 @@ export default function HomeScreen() {
         null
     );
     const [checkForSave, setCheckForSave] = useState(false);
+    const [date, setDate] = useState<Date>(new Date());
+    const [refresh, setRefresh] = useState(false);
+
+    useEffect(() => {
+        if (isAmountSeted() && selectedCategory) {
+            setCheckForSave(true);
+        } else {
+            setCheckForSave(false);
+        }
+    }, [amount, selectedCategory]);
 
     const getFormattedAmount = () => {
         if (!amount || amount === "+" || amount === "-") return 0;
@@ -37,12 +49,18 @@ export default function HomeScreen() {
         return false;
     };
 
-    const checkAll = () => {
-        if (isAmountSeted() && selectedCategory) {
-            setCheckForSave(true);
-        } else {
-            setCheckForSave(false);
-        }
+    const closePaymentModal = () => {
+        setPaymentModal(false);
+        setAmount("-");
+        setSelectedCategory(null);
+    };
+
+    const savePayment = async () => {
+        await addPayment(selectedCategory!, date, getFormattedAmount());
+        debugger;
+        closePaymentModal();
+        debugger;
+        setRefresh(!refresh);
     };
 
     const changeTab = (index: number) => {
@@ -76,6 +94,7 @@ export default function HomeScreen() {
     };
 
     const numpadEdit = (number: string) => {
+        let newAmount;
         if (number == "⌫") {
             if (amount.length > 1) {
                 setAmount(amount.slice(0, -1));
@@ -88,14 +107,12 @@ export default function HomeScreen() {
                 if (amount.length == 1) {
                     setAmount(amount + "0.");
                 } else setAmount(amount + ".");
-            }
-            if (amount.length == 2) {
-                if (amount[1] == "0") {
+            } else {
+                if (amount.length == 2 && amount[1] == "0") {
                     setAmount(amount.slice(0, -1) + number);
-                }
-            } else setAmount(amount + number);
+                } else setAmount(amount + number);
+            }
         }
-        checkAll();
     };
 
     async function saveCategory() {
@@ -150,7 +167,7 @@ export default function HomeScreen() {
                         styles.containerStyle,
                         { alignSelf: "flex-end" },
                     ]}
-                    onPress={() => setPaymentModal(!paymentModal)}
+                    onPress={() => setPaymentModal(true)}
                 />
 
                 <Overlay
@@ -221,12 +238,12 @@ export default function HomeScreen() {
                     isVisible={paymentModal}
                     overlayStyle={styles.overlayPayment}
                     animationType="fade"
-                    onBackdropPress={() => setPaymentModal(false)}
+                    onBackdropPress={() => closePaymentModal()}
                 >
                     <View style={styles.overlayContainer}>
                         {/* Close button */}
                         <TouchableOpacity
-                            onPress={() => setPaymentModal(false)}
+                            onPress={() => closePaymentModal()}
                             style={styles.closeButtonTopRight}
                         >
                             <Text style={styles.closeText}>✕</Text>
@@ -248,7 +265,6 @@ export default function HomeScreen() {
                         <LastCategories
                             setId={(id) => {
                                 setSelectedCategory(id);
-                                checkAll();
                             }}
                         />
                         <Input
@@ -266,22 +282,19 @@ export default function HomeScreen() {
                                 },
                             ]}
                         />
-                        <DateInput />
+                        <DateInput passDate={setDate} />
                         <NumericPad onPress={(x) => numpadEdit(x)} />
                         <Button
                             title="Save"
-                            buttonStyle={[
-                                styles.saveButton,
-                                { margin: 10 },
-                                checkForSave && {
-                                    backgroundColor: Colors.accentLight,
-                                },
-                            ]}
+                            onPress={(index) => savePayment()}
+                            disabled={!checkForSave}
+                            buttonStyle={[styles.saveButton, { margin: 10 }]}
                         />
                     </View>
                 </Overlay>
             </View>
             <Balance />
+            <PaymentsList refresh={refresh} />
         </>
     );
 }

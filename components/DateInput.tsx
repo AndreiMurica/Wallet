@@ -3,21 +3,22 @@ import { View, Platform, StyleSheet, TouchableOpacity } from "react-native";
 import { Icon, Input } from "@rneui/themed";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "@/constants/Colors";
+import { formatDateEU } from "@/utils/formatDate";
 
-export default function DateInput({ label }: { label?: string }) {
+type Props = {
+    passDate: (date: Date) => void;
+};
+
+export default function DateInput({ passDate }: Props) {
     const [date, setDate] = useState<Date>(new Date());
     const [show, setShow] = useState(false);
 
     const handleChange = (event: any, selectedDate?: Date) => {
         setShow(false);
-        if (selectedDate) setDate(selectedDate);
-    };
-
-    const formatDateEU = (d: Date) => {
-        const day = String(d.getDate()).padStart(2, "0");
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const year = d.getFullYear();
-        return `${day}/${month}/${year}`;
+        if (selectedDate) {
+            setDate(selectedDate);
+            passDate(selectedDate);
+        }
     };
 
     return (
@@ -31,7 +32,6 @@ export default function DateInput({ label }: { label?: string }) {
                         color: Colors.textPrimary,
                         containerStyle: styles.icon,
                     }}
-                    label={label}
                     placeholder="Select date"
                     editable={false}
                     value={formatDateEU(date)}

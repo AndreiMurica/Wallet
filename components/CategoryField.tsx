@@ -12,6 +12,7 @@ export default function CategoryField({ id, color, name, newWidth }: Props) {
     return (
         <View
             style={[styles.container, newWidth?.valueOf && { width: newWidth }]}
+            key={id}
         >
             <View style={[styles.circle, { backgroundColor: color }]} />
             <Text style={styles.text}>{name}</Text>

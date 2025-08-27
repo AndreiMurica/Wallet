@@ -9,11 +9,12 @@ import "react-native-reanimated";
 import { supabase } from "../database/supabase.js";
 import { View, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
+import PaymentsScreen from "./PaymentsScreen.js";
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
     const [session, setSession] = useState<Session | null>(null);
- 
+
     const [loaded] = useFonts({
         SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     });
@@ -42,6 +43,14 @@ export default function RootLayout() {
                             options={{ headerShown: false }}
                         />
                         <Stack.Screen name="+not-found" />
+                        <Stack.Screen
+                            name="PaymentsScreen"
+                            options={{
+                                headerShown: false,
+                                presentation: "transparentModal", // face ecranul să pară "peste"
+                                animation: "slide_from_bottom",
+                            }}
+                        />
                     </Stack>
                     <StatusBar style="auto" />
                 </>

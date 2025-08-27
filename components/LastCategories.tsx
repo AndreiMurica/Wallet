@@ -4,7 +4,7 @@ import { ScrollView, View, StyleSheet, TouchableOpacity } from "react-native";
 import CategoryField from "./CategoryField";
 
 type Props = {
-    setId: (x: string) => void;
+    setId: (x: string | null) => void;
 };
 
 export default function LastCategories({ setId }: Props) {
@@ -13,7 +13,11 @@ export default function LastCategories({ setId }: Props) {
 
     const select = (obj: any) => {
         setSelected(obj);
-        setId(obj.Id);
+        if (obj == null) {
+            setId(null);
+            return;
+        }
+        setId(obj.id);
     };
     useEffect(() => {
         const fetchCategories = async () => {
@@ -25,29 +29,32 @@ export default function LastCategories({ setId }: Props) {
     return (
         <View style={styles.container}>
             {selected ? (
-                <View style={styles.selectedContainer}>
-                    <CategoryField
-                        key={selected.id}
-                        color={selected.color}
-                        name={selected.name}
-                        id={selected.id}
-                        newWidth={300}
-                    />
-                </View>
+                <TouchableOpacity onPress={() => select(null)}>
+                    <View style={styles.selectedContainer}>
+                        <CategoryField
+                            key={selected.id}
+                            color={selected.color}
+                            name={selected.name}
+                            id={selected.id}
+                            newWidth={300}
+                        />
+                    </View>
+                </TouchableOpacity>
             ) : (
                 <ScrollView
                     horizontal
                     contentContainerStyle={styles.scrollContent}
                 >
-                    {categories?.map((categorie) => (
+                    {categories?.map((category) => (
                         <TouchableOpacity
-                            onPress={() => setSelected(categorie)}
+                            key={category.id}
+                            onPress={() => select(category)}
                         >
                             <CategoryField
-                                key={categorie.id}
-                                color={categorie.color}
-                                name={categorie.name}
-                                id={categorie.id}
+                                key={category.id}
+                                color={category.color}
+                                name={category.name}
+                                id={category.id}
                             />
                         </TouchableOpacity>
                     ))}
