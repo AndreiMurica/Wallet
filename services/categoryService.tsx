@@ -1,8 +1,6 @@
 import { supabase } from "../database/supabase";
 
 export const addCategory = async (name: string, color: string) => {
-    name.toLowerCase();
-    name[0].toUpperCase();
     await supabase.from("Categories").insert([{ name, color }]).select();
 };
 

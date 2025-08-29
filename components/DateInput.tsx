@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Platform, StyleSheet, TouchableOpacity } from "react-native";
 import { Icon, Input } from "@rneui/themed";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -7,11 +7,18 @@ import { formatDateEU } from "@/utils/formatDate";
 
 type Props = {
     passDate: (date: Date) => void;
+    oldDate?: Date;
 };
 
-export default function DateInput({ passDate }: Props) {
+export default function DateInput({ passDate, oldDate }: Props) {
     const [date, setDate] = useState<Date>(new Date());
     const [show, setShow] = useState(false);
+
+    useEffect(() => {
+        if (oldDate) {
+            setDate(oldDate);
+        }
+    }, [oldDate]);
 
     const handleChange = (event: any, selectedDate?: Date) => {
         setShow(false);

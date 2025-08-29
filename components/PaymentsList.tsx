@@ -52,8 +52,14 @@ export default function PaymentsList({ refresh }: { refresh: boolean }) {
             </TouchableOpacity>
 
             {lastPayments &&
-                lastPayments.map((payment) => (
-                    <View key={payment.id} style={styles.itemRow}>
+                lastPayments.map((payment, x) => (
+                    <View
+                        key={payment.id}
+                        style={[
+                            styles.itemRow,
+                            x == 2 && { borderBottomWidth: 0 },
+                        ]}
+                    >
                         <View style={styles.categoryContainer}>
                             <View
                                 style={[

@@ -2,14 +2,22 @@ import { getAllCategories } from "@/services/categoryService";
 import { useEffect, useState } from "react";
 import { ScrollView, View, StyleSheet, TouchableOpacity } from "react-native";
 import CategoryField from "./CategoryField";
+import { Payment } from "@/services/paymentService";
+import { Category } from "@/constants/Types";
 
 type Props = {
     setId: (x: string | null) => void;
+    paymentCategory?: Category | null;
 };
 
-export default function LastCategories({ setId }: Props) {
+export default function LastCategories({ setId, paymentCategory }: Props) {
     const [categories, setCategories] = useState<any[] | null>([]);
-    const [selected, setSelected] = useState<any | null>(null);
+    const [selected, setSelected] = useState<any | null>(paymentCategory);
+
+    useEffect(() => {
+        setSelected(paymentCategory);
+        console.log(paymentCategory);
+    }, [paymentCategory]);
 
     const select = (obj: any) => {
         setSelected(obj);
@@ -19,6 +27,7 @@ export default function LastCategories({ setId }: Props) {
         }
         setId(obj.id);
     };
+
     useEffect(() => {
         const fetchCategories = async () => {
             const data = await getAllCategories();
