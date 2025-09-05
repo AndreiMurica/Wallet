@@ -32,7 +32,6 @@ type Payment = {
 
 export default function PaymentsList({ refresh }: { refresh: boolean }) {
     const [lastPayments, setLastPayment] = useState<Payment[] | null>(null);
-    const [isListOpen, setIsListOpen] = useState(false);
 
     const router = useRouter();
     useEffect(() => {

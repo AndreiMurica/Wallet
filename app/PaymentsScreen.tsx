@@ -11,7 +11,9 @@ import {
     StyleSheet,
     TouchableOpacity,
     SafeAreaView,
+    ScrollView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PaymentsScreen() {
     const router = useRouter();
@@ -21,6 +23,7 @@ export default function PaymentsScreen() {
     > | null>(null);
     const [editIdPayment, setEditIdPayment] = useState("");
     const [paymentModal, setPaymentModal] = useState(false);
+    const [refresh, setRefresh] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -28,9 +31,12 @@ export default function PaymentsScreen() {
             setGroupedPayments(data);
         };
         fetchData();
-    }, []);
+    }, [refresh]);
+
+    const insets = useSafeAreaInsets();
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.push("/(tabs)")}>
                     <Text>
@@ -41,104 +47,112 @@ export default function PaymentsScreen() {
                 <View style={{ width: 24 }} />
             </View>
 
-            <View style={styles.container}>
-                {groupedPayments &&
-                    Object.entries(groupedPayments).map((data) => {
-                        return (
-                            <View key={data[0]}>
-                                <View style={styles.dataTotal}>
-                                    <Text style={styles.text}>
-                                        {formatDateList(data[0])}
-                                    </Text>
-                                    <Text style={styles.text}>
-                                        {data[1].total}
-                                    </Text>
-                                </View>
-                                <Card containerStyle={styles.card}>
-                                    {data[1].transactions.map(
-                                        (transaction, x) => {
-                                            return (
-                                                <TouchableOpacity
-                                                    key={transaction.id}
-                                                    onPress={() => {
-                                                        setPaymentModal(true);
-                                                        setEditIdPayment(
-                                                            transaction.id
-                                                        );
-                                                    }}
-                                                >
-                                                    <View
+            <ScrollView>
+                <View style={styles.container}>
+                    {groupedPayments &&
+                        Object.entries(groupedPayments).map((data) => {
+                            return (
+                                <View key={data[0]}>
+                                    <View style={styles.dataTotal}>
+                                        <Text style={styles.text}>
+                                            {formatDateList(data[0])}
+                                        </Text>
+                                        <Text style={styles.text}>
+                                            {data[1].total}
+                                        </Text>
+                                    </View>
+                                    <Card containerStyle={styles.card}>
+                                        {data[1].transactions.map(
+                                            (transaction, x) => {
+                                                return (
+                                                    <TouchableOpacity
                                                         key={transaction.id}
-                                                        style={[
-                                                            styles.itemRow,
-                                                            x ==
-                                                                data[1]
-                                                                    .transactions
-                                                                    .length -
-                                                                    1 && {
-                                                                borderBottomWidth: 0,
-                                                            },
-                                                        ]}
+                                                        onPress={() => {
+                                                            setPaymentModal(
+                                                                true
+                                                            );
+                                                            setEditIdPayment(
+                                                                transaction.id
+                                                            );
+                                                        }}
                                                     >
                                                         <View
-                                                            style={
-                                                                styles.categoryContainer
-                                                            }
+                                                            key={transaction.id}
+                                                            style={[
+                                                                styles.itemRow,
+                                                                x ==
+                                                                    data[1]
+                                                                        .transactions
+                                                                        .length -
+                                                                        1 && {
+                                                                    borderBottomWidth: 0,
+                                                                },
+                                                            ]}
                                                         >
-                                                            <View
-                                                                style={[
-                                                                    styles.circle,
-                                                                    {
-                                                                        backgroundColor:
-                                                                            transaction
-                                                                                .category
-                                                                                .color,
-                                                                    },
-                                                                ]}
-                                                            />
                                                             <View
                                                                 style={
-                                                                    styles.categoryTextContainer
+                                                                    styles.categoryContainer
                                                                 }
                                                             >
-                                                                <Text
+                                                                <View
+                                                                    style={[
+                                                                        styles.circle,
+                                                                        {
+                                                                            backgroundColor:
+                                                                                transaction
+                                                                                    .category
+                                                                                    .color,
+                                                                        },
+                                                                    ]}
+                                                                />
+                                                                <View
                                                                     style={
-                                                                        styles.text
+                                                                        styles.categoryTextContainer
                                                                     }
                                                                 >
-                                                                    {
-                                                                        transaction
-                                                                            .category
-                                                                            .name
-                                                                    }
-                                                                </Text>
+                                                                    <Text
+                                                                        style={
+                                                                            styles.text
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            transaction
+                                                                                .category
+                                                                                .name
+                                                                        }
+                                                                    </Text>
+                                                                </View>
                                                             </View>
+                                                            <Text
+                                                                style={
+                                                                    styles.amount
+                                                                }
+                                                            >
+                                                                {
+                                                                    transaction.amount
+                                                                }{" "}
+                                                                RON
+                                                            </Text>
                                                         </View>
-                                                        <Text
-                                                            style={
-                                                                styles.amount
-                                                            }
-                                                        >
-                                                            {transaction.amount}{" "}
-                                                            RON
-                                                        </Text>
-                                                    </View>
-                                                </TouchableOpacity>
-                                            );
-                                        }
-                                    )}
-                                </Card>
-                            </View>
-                        );
-                    })}
-                {editIdPayment && (
-                    <AddPayment
-                        paymentModal={paymentModal}
-                        setPaymentModal={setPaymentModal}
-                        idPayment={editIdPayment}
-                    />
-                )}
-            </View>
+                                                    </TouchableOpacity>
+                                                );
+                                            }
+                                        )}
+                                    </Card>
+                                </View>
+                            );
+                        })}
+                    {editIdPayment && (
+                        <AddPayment
+                            paymentModal={paymentModal}
+                            setPaymentModal={setPaymentModal}
+                            idPayment={editIdPayment}
+                            refresh={refresh}
+                            setRefresh={setRefresh}
+                        />
+                    )}
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -155,7 +169,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         paddingHorizontal: 15,
-        paddingTop: 30, // pentru status bar
     },
     title: {
         color: "white",

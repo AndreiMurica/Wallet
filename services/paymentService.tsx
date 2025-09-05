@@ -99,3 +99,19 @@ export const getPaymentById = async (id: string) => {
         .eq("id", id);
     return data;
 };
+
+export const deletePaymentById = async (id: string) => {
+    await supabase.from("Payments").delete().eq("id", id);
+};
+
+export const updatePaymentById = async (
+    id: string,
+    category_id: string,
+    date: Date,
+    amount: number
+) => {
+    await supabase
+        .from("Payments")
+        .update([{ category_id, date, amount }])
+        .eq("id", id);
+};

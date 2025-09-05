@@ -19,3 +19,16 @@ export const getAllCategories = async () => {
     const { data, error } = await supabase.from("Categories").select();
     return data;
 };
+
+export const getAllCategoriesAndPayments = async () => {
+    const { data, error } = await supabase.rpc(
+        "get_all_categories_and_payments"
+    );
+
+    if (error) {
+        console.error("Error fetching categories and payments:", error);
+        return [];
+    }
+
+    return data;
+};

@@ -65,7 +65,7 @@ export default function HomeScreen() {
         <>
             <View style={styles.containerButtons}>
                 <Button
-                    title="Adauga categorie"
+                    title="Add Category"
                     icon={{
                         name: "plus",
                         type: "font-awesome",
@@ -82,7 +82,7 @@ export default function HomeScreen() {
                     onPress={() => setVisible(!visible)}
                 />
                 <Button
-                    title="Adauga plata"
+                    title="Add Payment"
                     icon={{
                         name: "money",
                         type: "font-awesome",
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
         position: "absolute",
     },
     buttonStyle: {
-        backgroundColor: Colors.accentPrimary,
+        backgroundColor: Colors.backgroundActive,
         borderColor: "transparent",
         borderWidth: 0,
         borderRadius: 30,

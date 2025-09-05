@@ -4,7 +4,13 @@ import { Colors } from "@/constants/Colors";
 import NumericPad from "@/components/NumericPad";
 import LastCategories from "@/components/LastCategories";
 import DateInput from "@/components/DateInput";
-import { addPayment, getPaymentById, Payment } from "@/services/paymentService";
+import {
+    addPayment,
+    deletePaymentById,
+    getPaymentById,
+    Payment,
+    updatePaymentById,
+} from "@/services/paymentService";
 import { useEffect, useState } from "react";
 import { Category } from "@/constants/Types";
 
@@ -49,13 +55,13 @@ export function AddPayment({
                             ? data[0].category[0]
                             : data[0].category
                     );
-                    console.log(new Date(data[0].date));
+                    setSelectedCategoryId(data[0].category.id);
                     setDate(new Date(data[0].date));
                 }
             }
         };
         setValues();
-    }, [idPayment]);
+    }, [idPayment, paymentModal]);
 
     useEffect(() => {
         if (isAmountSeted() && selectedCategoryId) {
@@ -103,10 +109,30 @@ export function AddPayment({
         }
     };
 
-    const savePayment = async () => {
-        await addPayment(selectedCategoryId!, date, getFormattedAmount());
+    const deletePayment = () => {
+        if (idPayment) {
+            deletePaymentById(idPayment);
+        }
         closePaymentModal();
-        if (refresh && setRefresh) {
+        if (setRefresh) {
+            console.log(refresh);
+            setRefresh(!refresh);
+        }
+    };
+
+    const savePayment = async () => {
+        if (idPayment) {
+            await updatePaymentById(
+                idPayment,
+                selectedCategoryId!,
+                date,
+                getFormattedAmount()
+            );
+        } else {
+            await addPayment(selectedCategoryId!, date, getFormattedAmount());
+        }
+        closePaymentModal();
+        if (setRefresh) {
             setRefresh(!refresh);
         }
     };
@@ -177,10 +203,20 @@ export function AddPayment({
                 <NumericPad onPress={(x) => numpadEdit(x)} />
                 <Button
                     title="Save"
-                    onPress={(index) => savePayment()}
+                    onPress={() => savePayment()}
                     disabled={!checkForSave}
                     buttonStyle={[styles.saveButton, { margin: 10 }]}
                 />
+                {paymentCategory && (
+                    <Button
+                        title="Delete"
+                        buttonStyle={[
+                            styles.saveButton,
+                            { margin: 10, backgroundColor: "red" },
+                        ]}
+                        onPress={() => deletePayment()}
+                    />
+                )}
             </View>
         </Overlay>
     );
