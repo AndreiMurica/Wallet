@@ -1,14 +1,29 @@
 import { supabase } from "../database/supabase";
 
 export const addCategory = async (name: string, color: string) => {
-    await supabase.from("Categories").insert([{ name, color }]).select();
+    await supabase.from("Categories").insert([{ name, color }]);
 };
 
-export const getCategoryByName = async (name: string) => {
+export const updateCategory = async (
+    id: string,
+    name: string,
+    color: string
+) => {
+    await supabase.from("Categories").update([{ name, color }]).eq("id", id);
+};
+
+export const getCategoryByName = async (name: string, id?: string) => {
     const { data, error } = await supabase
         .from("Categories")
         .select()
         .eq("name", name);
+    if (id) {
+        if (data && data.length > 0 && data[0].id != id) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     if (data && data.length > 0) {
         return true;
     }
@@ -30,5 +45,13 @@ export const getAllCategoriesAndPayments = async () => {
         return [];
     }
 
+    return data;
+};
+
+export const getCategoryById = async (id: string) => {
+    const { data, error } = await supabase
+        .from("Categories")
+        .select()
+        .eq("id", id);
     return data;
 };

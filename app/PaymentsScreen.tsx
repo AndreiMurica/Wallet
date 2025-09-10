@@ -38,7 +38,7 @@ export default function PaymentsScreen() {
     return (
         <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.push("/(tabs)")}>
+                <TouchableOpacity onPress={() => router.back()}>
                     <Text>
                         <Icon name="arrow-back" size={24} color="white" />
                     </Text>

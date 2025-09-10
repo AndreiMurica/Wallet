@@ -3,8 +3,8 @@ import { getLastPayments } from "@/services/paymentService";
 import { formatDateEU, formatDateList } from "@/utils/formatDate";
 import { useNavigation } from "@react-navigation/native";
 import { Card } from "@rneui/base";
-import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     Animated,
     View,
@@ -13,7 +13,9 @@ import {
     PanResponder,
     Dimensions,
     TouchableOpacity,
+    Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height } = Dimensions.get("window");
 
@@ -32,8 +34,19 @@ type Payment = {
 
 export default function PaymentsList({ refresh }: { refresh: boolean }) {
     const [lastPayments, setLastPayment] = useState<Payment[] | null>(null);
+    const insets = useSafeAreaInsets();
 
     const router = useRouter();
+    useFocusEffect(
+        useCallback(() => {
+            const getPayments = async () => {
+                const last = await getLastPayments(3);
+                setLastPayment(last);
+            };
+            getPayments();
+        }, [])
+    );
+
     useEffect(() => {
         const getPayments = async () => {
             const last = await getLastPayments(3);
@@ -43,9 +56,15 @@ export default function PaymentsList({ refresh }: { refresh: boolean }) {
     }, [refresh]);
 
     return (
-        <Card containerStyle={styles.card}>
-            {/* <View style={styles.handle}></View> */}
-
+        <Card
+            containerStyle={[
+                styles.card,
+                {
+                    paddingBottom:
+                        Platform.OS === "ios" ? insets.bottom + 50 : 20,
+                },
+            ]}
+        >
             <TouchableOpacity onPress={() => router.push("/PaymentsScreen")}>
                 <Text style={styles.title}>See all payments</Text>
             </TouchableOpacity>
@@ -56,7 +75,9 @@ export default function PaymentsList({ refresh }: { refresh: boolean }) {
                         key={payment.id}
                         style={[
                             styles.itemRow,
-                            x == 2 && { borderBottomWidth: 0 },
+                            x == lastPayments.length - 1 && {
+                                borderBottomWidth: 0,
+                            },
                         ]}
                     >
                         <View style={styles.categoryContainer}>

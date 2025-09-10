@@ -5,7 +5,6 @@ export const addPayment = async (
     date: Date,
     amount: number
 ) => {
-    console.log(date);
     await supabase
         .from("Payments")
         .insert([{ category_id, date, amount }])
@@ -114,4 +113,45 @@ export const updatePaymentById = async (
         .from("Payments")
         .update([{ category_id, date, amount }])
         .eq("id", id);
+};
+
+export const getSpentThisMonth = async () => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const { data, error } = await supabase
+        .from("Payments")
+        .select("amount")
+        .gte("date", startOfMonth.toISOString())
+        .lte("date", endOfMonth.toISOString());
+
+    if (!data) return 0;
+
+    const total = data.reduce((sum, payment) => sum + payment.amount, 0);
+    return total;
+};
+
+export const getSpentThisYear = async () => {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+    const { data, error } = await supabase
+        .from("Payments")
+        .select("amount")
+        .gte("date", startOfYear.toISOString());
+
+    if (!data) return 0;
+
+    const total = data.reduce((sum, payment) => sum + payment.amount, 0);
+    return total;
+};
+
+export const getSpentAllTime = async () => {
+    const { data, error } = await supabase.from("Payments").select("amount");
+
+    if (!data) return 0;
+
+    const total = data.reduce((sum, payment) => sum + payment.amount, 0);
+    return total;
 };

@@ -115,7 +115,6 @@ export function AddPayment({
         }
         closePaymentModal();
         if (setRefresh) {
-            console.log(refresh);
             setRefresh(!refresh);
         }
     };

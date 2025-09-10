@@ -1,65 +1,16 @@
-import { Button, ButtonGroup, Input, Overlay, Text } from "@rneui/themed";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Button } from "@rneui/themed";
+import { StyleSheet, View } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Balance } from "@/components/Balance";
-import { useEffect, useState } from "react";
-import ColorPickerComponent from "@/components/ColorPickerComponent";
-import { addCategory, getCategoryByName } from "@/services/categoryService";
-import NumericPad from "@/components/NumericPad";
-import LastCategories from "@/components/LastCategories";
-import DateInput from "@/components/DateInput";
-import { addPayment } from "@/services/paymentService";
+import { useState } from "react";
 import PaymentsList from "@/components/PaymentsList";
 import { AddPayment } from "@/components/AddPayment";
+import AddCategory from "@/components/AddCategory";
 
 export default function HomeScreen() {
     const [visible, setVisible] = useState(false);
-    const [color, setColor] = useState(getRandomColor());
-    const [categoryName, setCategoryName] = useState("");
-    const [pickingColor, setPickingColor] = useState(false);
-    const [emptyAlert, setEmptyAlert] = useState(false);
-    const [usedNameAlert, setUsedNameAlert] = useState(false);
     const [paymentModal, setPaymentModal] = useState(false);
-
     const [refresh, setRefresh] = useState(false);
-
-    function getRandomColor() {
-        const letters = "0123456789ABCDEF";
-        let color = "#";
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-    }
-
-    function exitModal() {
-        setEmptyAlert(false);
-        setUsedNameAlert(false);
-        setVisible(!visible);
-        setCategoryName("");
-    }
-
-    const saveColor = (colorObj: string) => {
-        setPickingColor(false);
-        setColor(colorObj);
-    };
-
-    async function saveCategory() {
-        if (categoryName == "") {
-            setEmptyAlert(true);
-            setUsedNameAlert(false);
-            return;
-        }
-        if (await getCategoryByName(categoryName)) {
-            setEmptyAlert(false);
-            setUsedNameAlert(true);
-            return;
-        }
-        setEmptyAlert(false);
-        await addCategory(categoryName, color);
-        setUsedNameAlert(false);
-        setVisible(false);
-    }
 
     return (
         <>
@@ -99,75 +50,13 @@ export default function HomeScreen() {
                     onPress={() => setPaymentModal(true)}
                 />
 
-                <Overlay
-                    isVisible={visible}
-                    onBackdropPress={exitModal}
-                    overlayStyle={styles.overlayBorder}
-                    animationType="fade"
-                >
-                    <View style={styles.container}>
-                        <Text style={styles.title}>Adauga o categorie</Text>
-
-                        <View style={styles.row}>
-                            <TouchableOpacity
-                                onPress={() => setPickingColor(true)}
-                                style={styles.colorPickerContainer}
-                            >
-                                <View
-                                    style={[
-                                        styles.colorCircle,
-                                        { backgroundColor: color },
-                                    ]}
-                                />
-                                <Text style={styles.colorText}>Set color</Text>
-                            </TouchableOpacity>
-
-                            <View style={{ flex: 1 }}>
-                                <Input
-                                    placeholder="Category name"
-                                    onChangeText={setCategoryName}
-                                    containerStyle={styles.inputContainer}
-                                    inputStyle={styles.inputText}
-                                    placeholderTextColor={Colors.textPrimary}
-                                />
-                                {emptyAlert && (
-                                    <Text style={styles.alert}>
-                                        Category name is mandatory
-                                    </Text>
-                                )}
-                                {usedNameAlert && (
-                                    <Text style={styles.alert}>
-                                        Category already exists
-                                    </Text>
-                                )}
-                            </View>
-                        </View>
-
-                        <Button
-                            onPress={saveCategory}
-                            buttonStyle={styles.saveButton}
-                            title="Save category"
-                        />
-                    </View>
-                </Overlay>
-
-                <Overlay
-                    isVisible={pickingColor}
-                    onBackdropPress={() => setPickingColor(false)}
-                    overlayStyle={styles.overlayBorder}
-                    animationType="fade"
-                >
-                    <View style={styles.modalColor}>
-                        <Text style={styles.modalTitle}>Pick a color</Text>
-                        <ColorPickerComponent color={color} save={saveColor} />
-                    </View>
-                </Overlay>
                 <AddPayment
                     paymentModal={paymentModal}
                     setPaymentModal={setPaymentModal}
                     refresh={refresh}
                     setRefresh={setRefresh}
                 />
+                <AddCategory visible={visible} setVisible={setVisible} />
             </View>
             <Balance />
             <PaymentsList refresh={refresh} />
@@ -240,9 +129,6 @@ const styles = StyleSheet.create({
         borderColor: Colors.accentPrimary,
         backgroundColor: "white",
         padding: 20,
-    },
-    container: {
-        width: 300, // sau flexibil cu minWidth/ maxWidth
     },
     title: {
         fontSize: 18,

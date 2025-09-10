@@ -1,15 +1,25 @@
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import {
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { Button, ButtonGroup, Input, Overlay, Text } from "@rneui/themed";
 
 import { Dropdown } from "react-native-element-dropdown";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAllCategoriesAndPayments } from "@/services/categoryService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
+import AddCategory from "@/components/AddCategory";
+import { useFocusEffect } from "expo-router";
 
 export default function Categories() {
     const [categories, setCategories] = useState<any[] | []>([]);
     const [orderCondition, setOrderCondition] = useState(1);
+    const [editingCategoryId, setEditingCategoryId] = useState("");
+    const [visible, setVisible] = useState(false);
 
     const insets = useSafeAreaInsets();
 
@@ -18,8 +28,18 @@ export default function Categories() {
             const data = await getAllCategoriesAndPayments();
             setCategories(data);
         };
-        getAllCategories();
-    }, []);
+        if (!visible) getAllCategories();
+    }, [visible]);
+
+    useFocusEffect(
+        useCallback(() => {
+            const getAllCategories = async () => {
+                const data = await getAllCategoriesAndPayments();
+                setCategories(data);
+            };
+            getAllCategories();
+        }, [])
+    );
 
     useEffect(() => {
         let sorted = [...categories];
@@ -63,7 +83,7 @@ export default function Categories() {
 
     return (
         <>
-            <SafeAreaView style={[{ paddingTop: insets.top }]}>
+            <View style={[{ paddingTop: insets.top, flex: 1 }]}>
                 <View style={styles.rowContainer}>
                     <Text style={styles.label}>Order:</Text>
                     <Dropdown
@@ -113,46 +133,67 @@ export default function Categories() {
                         ]}
                     />
                 </View>
-                <View>
-                    {categories ? (
-                        categories.map((category, x) => (
-                            <View
-                                key={category.id}
-                                style={[
-                                    styles.itemRow,
-                                    x == categories.length - 1 && {
-                                        borderBottomWidth: 0,
-                                    },
-                                ]}
-                            >
-                                <View style={styles.categoryContainer}>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                    <View>
+                        {categories ? (
+                            categories.map((category, x) => (
+                                <TouchableOpacity
+                                    key={category.id}
+                                    onPress={() => {
+                                        setEditingCategoryId(category.id);
+                                        setVisible(true);
+                                    }}
+                                >
                                     <View
                                         style={[
-                                            styles.circle,
-                                            {
-                                                backgroundColor: category.color,
+                                            styles.itemRow,
+                                            x == categories.length - 1 && {
+                                                borderBottomWidth: 0,
                                             },
                                         ]}
-                                    />
-                                    <View style={styles.categoryTextContainer}>
-                                        <Text style={styles.text}>
-                                            {category.name}
-                                        </Text>
-                                        <Text style={styles.date}>
-                                            {category.total_payments} payments
+                                    >
+                                        <View style={styles.categoryContainer}>
+                                            <View
+                                                style={[
+                                                    styles.circle,
+                                                    {
+                                                        backgroundColor:
+                                                            category.color,
+                                                    },
+                                                ]}
+                                            />
+                                            <View
+                                                style={
+                                                    styles.categoryTextContainer
+                                                }
+                                            >
+                                                <Text style={styles.text}>
+                                                    {category.name}
+                                                </Text>
+                                                <Text style={styles.date}>
+                                                    {category.total_payments}{" "}
+                                                    payments
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <Text style={styles.amount}>
+                                            {category.total_amount} RON
                                         </Text>
                                     </View>
-                                </View>
-                                <Text style={styles.amount}>
-                                    {category.total_amount} RON
-                                </Text>
-                            </View>
-                        ))
-                    ) : (
-                        <></>
-                    )}
-                </View>
-            </SafeAreaView>
+                                </TouchableOpacity>
+                            ))
+                        ) : (
+                            <></>
+                        )}
+                    </View>
+                </ScrollView>
+                <AddCategory
+                    visible={visible}
+                    setVisible={setVisible}
+                    idCategory={editingCategoryId}
+                    setIdCategory={setEditingCategoryId}
+                />
+            </View>
         </>
     );
 }

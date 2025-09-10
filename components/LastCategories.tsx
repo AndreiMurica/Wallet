@@ -16,7 +16,6 @@ export default function LastCategories({ setId, paymentCategory }: Props) {
 
     useEffect(() => {
         setSelected(paymentCategory);
-        console.log(paymentCategory);
     }, [paymentCategory]);
 
     const select = (obj: any) => {
