@@ -1,5 +1,5 @@
 import {
-    SafeAreaView,
+    Platform,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
@@ -8,7 +8,7 @@ import {
 import { Button, ButtonGroup, Input, Overlay, Text } from "@rneui/themed";
 
 import { Dropdown } from "react-native-element-dropdown";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getAllCategoriesAndPayments } from "@/services/categoryService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
@@ -38,6 +38,7 @@ export default function Categories() {
                 setCategories(data);
             };
             getAllCategories();
+            setOrderCondition(1);
         }, [])
     );
 
@@ -73,7 +74,7 @@ export default function Categories() {
         setCategories(sorted);
     }, [orderCondition]);
 
-    const orderOption = [
+    const orderOptions = [
         { label: "Asc. by name", value: 1 },
         { label: "Asc. by payments number", value: 2 },
         { label: "Desc. by payments number", value: 3 },
@@ -83,16 +84,19 @@ export default function Categories() {
 
     return (
         <>
-            <View style={[{ paddingTop: insets.top, flex: 1 }]}>
+            <View style={[{ flex: 1, paddingTop: insets.top }]}>
                 <View style={styles.rowContainer}>
                     <Text style={styles.label}>Order:</Text>
                     <Dropdown
                         style={styles.dropdownRow}
-                        data={orderOption}
+                        data={orderOptions}
                         labelField="label"
                         valueField="value"
                         selectedTextProps={{
-                            style: { color: Colors.textPrimary, fontSize: 20 }, // culoarea textului selectat
+                            style: {
+                                color: Colors.textPrimary,
+                                fontSize: 20,
+                            }, // culoarea textului selectat
                         }}
                         value={orderCondition}
                         onChange={(item) => setOrderCondition(item.value)}
@@ -124,7 +128,10 @@ export default function Categories() {
                             size: 15,
                             color: Colors.textPrimary,
                         }}
-                        iconContainerStyle={{ marginLeft: 0, marginRight: 0 }}
+                        iconContainerStyle={{
+                            marginLeft: 0,
+                            marginRight: 0,
+                        }}
                         titleStyle={{ fontWeight: "700" }}
                         buttonStyle={styles.buttonStyle}
                         containerStyle={[
@@ -133,8 +140,13 @@ export default function Categories() {
                         ]}
                     />
                 </View>
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                    <View>
+                <View style={{ marginHorizontal: 10, flex: 1 }}>
+                    <ScrollView
+                        showsVerticalScrollIndicator
+                        contentContainerStyle={
+                            Platform.OS === "ios" && { paddingBottom: 100 }
+                        }
+                    >
                         {categories ? (
                             categories.map((category, x) => (
                                 <TouchableOpacity
@@ -185,8 +197,8 @@ export default function Categories() {
                         ) : (
                             <></>
                         )}
-                    </View>
-                </ScrollView>
+                    </ScrollView>
+                </View>
                 <AddCategory
                     visible={visible}
                     setVisible={setVisible}

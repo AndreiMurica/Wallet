@@ -48,7 +48,7 @@ export function BalanceWatch({ text, index, translateX, amount }: Props) {
 
     return (
         <Animated.View
-            style={[styles.balance, rStyle, index == 2 && { marginRight: 18 }]}
+            style={[styles.balance, rStyle, index == 2 && { marginRight: 0 }]}
         >
             <Animated.View style={rTextStyle}>
                 <Text style={styles.balanceText}>

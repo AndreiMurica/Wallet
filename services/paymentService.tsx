@@ -155,3 +155,48 @@ export const getSpentAllTime = async () => {
     const total = data.reduce((sum, payment) => sum + payment.amount, 0);
     return total;
 };
+
+export const getOldestPayment = async () => {
+    const { data, error } = await supabase
+        .from("Payments")
+        .select("date")
+        .order("date", { ascending: true });
+    if (data) {
+        return data[0];
+    }
+};
+
+export const getAllPaymentsPeriod = async (
+    startOfMonth: Date,
+    endOfMonth: Date
+) => {
+    const { data, error } = await supabase
+        .from("Payments")
+        .select(
+            `
+        amount,
+        category:Categories ( id, name, color )
+      `
+        )
+        .gte("date", startOfMonth.toISOString())
+        .lte("date", endOfMonth.toISOString());
+
+    if (!data) return null;
+
+    const grouped: Record<
+        string,
+        { total: number; name: string; color: string }
+    > = {};
+
+    data?.forEach((payment) => {
+        if (!grouped[payment.category.id]) {
+            grouped[payment.category.id] = {
+                total: 0,
+                name: payment.category.name,
+                color: payment.category.color,
+            };
+        }
+        grouped[payment.category.id].total += payment.amount;
+    });
+    return grouped;
+};

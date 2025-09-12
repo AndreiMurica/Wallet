@@ -15,13 +15,12 @@ export default function TabLayout() {
                     tabBarInactiveTintColor: Colors.textSecondary, // culoarea tab inactiv
                     headerShown: false,
                     tabBarButton: HapticTab,
-                    tabBarActiveBackgroundColor: Colors.backgroundActive,
+                    tabBarActiveBackgroundColor: Colors.card,
                     tabBarInactiveBackgroundColor: Colors.card,
                     tabBarBackground: TabBarBackground,
                     sceneStyle: { backgroundColor: Colors.background },
                     tabBarStyle: Platform.select({
                         ios: {
-                            // Use a transparent background on iOS to show the blur effect
                             position: "absolute",
                         },
                         default: {},
@@ -49,6 +48,19 @@ export default function TabLayout() {
                             <IconSymbol
                                 size={28}
                                 name="paperplane.fill"
+                                color={color}
+                            />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="statistics"
+                    options={{
+                        title: "Statistics",
+                        tabBarIcon: ({ color }) => (
+                            <IconSymbol
+                                size={28}
+                                name="chart.bar"
                                 color={color}
                             />
                         ),
